@@ -74,6 +74,10 @@ jobs:
         find ./build/linux/*/release/plugins -type f -name '*.so' -exec cp {} ./build/linux/*/release/bundle/lib/ \; || true
         find ./build -type f -name '*.so'
     - run: find ./build -type f -name '*.so'
+    - name:
+      id: tag
+      run: |
+        echo "value=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: Build AppImage unsing appimage-builder
       uses: docker://appimagecrafters/appimage-builder:0.8.5
       with:
@@ -84,3 +88,25 @@ jobs:
       with:
         name: AppImage
         path: './*.AppImage*'
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ steps.tag.outputs.value }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes on this release
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./*.AppImage*
+        asset_name: ./Palworld-Pak-Manager.AppImage
+        asset_content_type: application/zip
