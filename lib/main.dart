@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pak_manager/util/mod/ModList.dart';
+import 'package:pak_manager/util/Process.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,6 +32,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Future<void> _kill() async {
+    await Task.kill('Palworld.exe');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,6 +72,15 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             );
           },
+        ),
+        floatingActionButton: Wrap(
+          children: [
+            FloatingActionButton(
+              onPressed: _kill,
+              tooltip: 'Kill',
+              child: const Icon(Icons.close),
+            ),
+          ],
         ));
   }
 }
