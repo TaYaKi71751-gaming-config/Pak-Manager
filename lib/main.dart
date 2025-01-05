@@ -33,7 +33,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Future<void> _kill() async {
-    await Task.kill('Palworld.exe');
+    await Task.kill('Palworld-Win64-Shippiing.exe');
   }
 
   @override
