@@ -5,7 +5,26 @@ class Task {
     if (Platform.isWindows) {
       Process.run('taskkill.exe', ['/F', '/IM', '$process']);
     } else if (Platform.isLinux || Platform.isMacOS) {
-      Process.run('pkill', ['-9', '$process']);
+						List<String> pids = List.empty(growable: true);
+					 var process = await Process.run("ps",["ax"]);
+						List<String> processList = process.stdout.split('\n');
+						for(String p in processList){
+							if(!p.contains('Palworld')){
+								continue;
+							}
+							List<String> col = p.split(' ');
+							String pid = '';
+							for(String c in col){
+								if(c == ''){
+									continue;
+								}
+								pids.add(c);
+								break;
+							}
+						}
+						for(String pid in pids){
+							await Process.run('kill', ['-9', '$pid']);
+						}
     }
   }
 }
