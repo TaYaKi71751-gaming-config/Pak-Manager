@@ -5,6 +5,53 @@ on:
   merge_group:
 
 jobs:
+  macos-build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@main
+    - name: Set up Flutter
+      uses: subosito/flutter-action@main
+    - name: Podfile
+      run: |
+        cd macos
+        rm Podfile.lock || true
+        flutter clean
+        flutter pub get
+        pod install
+        pod update
+    - name: Build
+      run: |
+        flutter build macos
+        mkdir -p target
+        cp -R build/macos/Build/Products/Release/pak_manager.app target/
+        sudo chmod +x target/pak_manager.app/Contents/MacOS/pak_manager
+
+    - uses: QQxiaoming/create-dmg-action@v0.0.2
+      with:
+        name: MacOS
+        srcdir: target
+    - name: Save build Artifact
+      uses: actions/upload-artifact@main
+      with:
+        name: MacOS
+        path: MacOS.dmg
+
+  windows-build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@main
+    - name: Set up Flutter
+      uses: subosito/flutter-action@main
+    - name: Build
+      run: |
+        flutter build windows
+        Compress-Archive -Path build\windows\x64\runner\Release\* -Destination Windows.zip
+    - name: Save build Artifact
+      uses: actions/upload-artifact@main
+      with:
+        name: Windows
+        path: Windows.zip
+    
   # https://github.com/AppImageCrafters/appimage-builder-flutter-example/blob/main/.github/workflows/appimage.yml
   linux-build:
     runs-on: ubuntu-20.04
@@ -36,7 +83,7 @@ jobs:
     - run: echo ${{ github.event.repository.name }}
     - name: Build for linux/${{ matrix.arch }} using uraimo/run-on-arch-action
       if: ${{ matrix.arch != 'x86_64' }}
-      uses: uraimo/run-on-arch-action@v2
+      uses: uraimo/run-on-arch-action@master
       with:
         arch: ${{ matrix.arch }}
         distro: ${{ matrix.distro }}
@@ -74,21 +121,41 @@ jobs:
         find ./build/linux/*/release/plugins -type f -name '*.so' -exec cp {} ./build/linux/*/release/bundle/lib/ \; || true
         find ./build -type f -name '*.so'
     - run: find ./build -type f -name '*.so'
-    - name:
-      id: tag
-      run: |
-        echo "value=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: Build AppImage unsing appimage-builder
       uses: docker://appimagecrafters/appimage-builder:0.8.5
       with:
         entrypoint: appimage-builder
         args: --recipe ./AppImageBuilder-${{ matrix.arch }}.yml --skip-test
+    - name: Zip
+      run: |
+        zip Linux.zip *.AppImage*
     - name: Save build Artifact
       uses: actions/upload-artifact@main
       with:
-        name: AppImage
-        path: './*.AppImage*'
+        name: Linux
+        path: Linux.zip
 
+  release:
+    needs: [ macos-build,windows-build,linux-build ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - name:
+      id: tag
+      run: |
+        echo "value=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+    - uses: actions/download-artifact@main
+      with:
+        name: Linux
+        path: .
+    - uses: actions/download-artifact@main
+      with:
+        name: Windows
+        path: .
+    - uses: actions/download-artifact@main
+      with:
+        name: MacOS
+        path: .
     - name: Create Release
       id: create_release
       uses: actions/create-release@main
@@ -107,6 +174,24 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./Palworld Pak Manager-latest-x86_64.AppImage
-        asset_name: Palworld Pak Manager-latest-x86_64.AppImage
+        asset_path: ./MacOS.dmg
+        asset_name: MacOS.dmg
+        asset_content_type: application/zip
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./Windows.zip
+        asset_name: Windows.zip
+        asset_content_type: application/zip
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./Linux.zip
+        asset_name: Linux.zip
         asset_content_type: application/zip
