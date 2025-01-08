@@ -6,35 +6,35 @@ on:
 
 jobs:
   macos-build:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@main
-    - name: Set up Flutter
-      uses: subosito/flutter-action@main
-    - name: Podfile
-      run: |
-        cd macos
-        rm Podfile.lock || true
-        flutter clean
-        flutter pub get
-        pod install
-        pod update
-    - name: Build
-      run: |
-        flutter build macos
-        mkdir -p target
-        cp -R build/macos/Build/Products/Release/pak_manager.app target/
-        sudo chmod +x target/pak_manager.app/Contents/MacOS/pak_manager
+    # runs-on: macos-latest
+    # steps:
+    # - uses: actions/checkout@main
+    # - name: Set up Flutter
+    #   uses: subosito/flutter-action@main
+    # - name: Podfile
+    #   run: |
+    #     cd macos
+    #     rm Podfile.lock || true
+    #     flutter clean
+    #     flutter pub get
+    #     pod install
+    #     pod update
+    # - name: Build
+    #   run: |
+    #     flutter build macos
+    #     mkdir -p target
+    #     cp -R build/macos/Build/Products/Release/pak_manager.app target/
+    #     sudo chmod +x target/pak_manager.app/Contents/MacOS/pak_manager
 
-    - uses: QQxiaoming/create-dmg-action@v0.0.2
-      with:
-        name: MacOS
-        srcdir: target
-    - name: Save build Artifact
-      uses: actions/upload-artifact@main
-      with:
-        name: MacOS
-        path: MacOS.dmg
+    # - uses: QQxiaoming/create-dmg-action@v0.0.2
+    #   with:
+    #     name: MacOS
+    #     srcdir: target
+    # - name: Save build Artifact
+    #   uses: actions/upload-artifact@main
+    #   with:
+    #     name: MacOS
+    #     path: MacOS.dmg
 
   windows-build:
     runs-on: windows-latest
@@ -152,10 +152,10 @@ jobs:
       with:
         name: Windows
         path: .
-    - uses: actions/download-artifact@main
-      with:
-        name: MacOS
-        path: .
+    # - uses: actions/download-artifact@main
+    #   with:
+    #     name: MacOS
+    #     path: .
     - name: Create Release
       id: create_release
       uses: actions/create-release@main
@@ -168,15 +168,15 @@ jobs:
           Changes on this release
         draft: false
         prerelease: false
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@main
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./MacOS.dmg
-        asset_name: MacOS.dmg
-        asset_content_type: application/zip
+    # - name: Upload Release Asset
+    #   uses: actions/upload-release-asset@main
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+    #     asset_path: ./MacOS.dmg
+    #     asset_name: MacOS.dmg
+    #     asset_content_type: application/zip
     - name: Upload Release Asset
       uses: actions/upload-release-asset@main
       env:
