@@ -12,11 +12,11 @@ class ModList {
           rtn.add(m);
         }
       }
-						List<String> dpath = entity.path.split('/');
-						dpath = (dpath.join('/').replaceAll('/Disabled', '').replaceAll(Directory.current.path, Directory.current.path + '/Disabled')).split('/');
-						if(Directory(dpath.join('/')).existsSync()){
+						List<String> dpath = entity.path.split(Platform.pathSeparator);
+						dpath = (dpath.join(Platform.pathSeparator).replaceAll(Platform.pathSeparator + 'Disabled', '').replaceAll(Directory.current.path, Directory.current.path + Platform.pathSeparator + 'Disabled')).split(Platform.pathSeparator);
+						if(Directory(dpath.join(Platform.pathSeparator)).existsSync()){
 							print(dpath);
-							 for (FileSystemEntity entity2 in Directory(dpath.join('/')).listSync()) {
+							 for (FileSystemEntity entity2 in Directory(dpath.join(Platform.pathSeparator)).listSync()) {
 									print(entity2.path);
 									for (FileSystemEntity entity3 in Directory(entity2.path).listSync()) {
 										var m = Mod(entity3.path);

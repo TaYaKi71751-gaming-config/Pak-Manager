@@ -4,14 +4,15 @@ class Mod {
   String? path;
   Mod(String this.path);
 
+
   bool get status {
     if (File(this.path!).existsSync()) {
-      if (this.path!.contains('/Disabled')) {
+      if (this.path!.contains(Platform.pathSeparator + 'Disabled')) {
         return false;
       }
     }
     if (File(this.path!).existsSync()) {
-      if (!this.path!.contains('/Disabled')) {
+      if (!this.path!.contains(Platform.pathSeparator + 'Disabled')) {
         return true;
       }
     }
@@ -21,16 +22,16 @@ class Mod {
   set status(bool stat) {
     String? from, to;
     if (stat == true) {
-      from = this.path!.replaceAll('/Disabled', '').replaceAll(Directory.current.path,Directory.current.path + '/Disabled');
-      to = this.path!.replaceAll('/Disabled', '');
+      from = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '').replaceAll(Directory.current.path,Directory.current.path + Platform.pathSeparator + 'Disabled');
+      to = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '');
     } else if (stat == false) {
-      to = this.path!.replaceAll('/Disabled', '').replaceAll(Directory.current.path,Directory.current.path + '/Disabled');
-      from = this.path!.replaceAll('/Disabled', '');
+      to = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '').replaceAll(Directory.current.path,Directory.current.path + Platform.pathSeparator + 'Disabled');
+      from = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '');
     }
 				print(this.path! + '\n' + from! + '\n' + to!);
-					 List<String> _path = this.path!.replaceAll('/Disabled', '').replaceAll(Directory.current.path, Directory.current.path + '/Disabled').split('/');
+					 List<String> _path = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '').replaceAll(Directory.current.path, Directory.current.path + Platform.pathSeparator + 'Disabled').split(Platform.pathSeparator);
 						_path[_path.length - 1] = '';
-					 Directory(_path.join('/')).createSync(recursive: true);
+					 Directory(_path.join(Platform.pathSeparator)).createSync(recursive: true);
 						print(this.path!.endsWith(from));
       if (this.path == to) {
       } else if (this.path! == from!) {
@@ -41,8 +42,8 @@ class Mod {
 
   get isMod {
     if (File(this.path!).existsSync()) {
-						var disabledPath = this.path!.replaceAll('/Disabled', '').replaceAll(Directory.current.path,Directory.current.path + '/Disabled');
-						var enabledPath = this.path!.replaceAll('/Disabled', '');
+						var disabledPath = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '').replaceAll(Directory.current.path,Directory.current.path + Platform.pathSeparator + 'Disabled');
+						var enabledPath = this.path!.replaceAll(Platform.pathSeparator + 'Disabled', '');
 						if (disabledPath.endsWith('.pak') && File(disabledPath).existsSync()){
 							 return true;
 						}
