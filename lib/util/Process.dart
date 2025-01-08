@@ -6,10 +6,10 @@ class Task {
       Process.run('taskkill.exe', ['/F', '/IM', '$process']);
     } else if (Platform.isLinux || Platform.isMacOS) {
 						List<String> pids = List.empty(growable: true);
-					 var process = await Process.run("ps",["ax"]);
-						List<String> processList = process.stdout.split('\n');
+					 ProcessResult _process = await Process.run("ps",["ax"]);
+						List<String> processList = _process.stdout.split('\n');
 						for(String p in processList){
-							if(!p.contains('Palworld')){
+							if(!p.contains(process)){
 								continue;
 							}
 							List<String> col = p.split(' ');
