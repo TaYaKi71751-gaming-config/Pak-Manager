@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:pak_manager/util/Find.dart';
 import 'package:pak_manager/util/mod/ModList.dart';
 import 'package:pak_manager/util/Process.dart';
 
@@ -36,8 +39,26 @@ class _MyHomePageState extends State<MyHomePage> {
     await Task.kill('Palworld-Win64-Shipping.exe');
   }
 
+  bool _moved_path_once = false;
+
+  void _move_path() {
+    if(_moved_path_once) return;
+    List<File> files = Find.file('Palworld.exe');
+    for(var file in files){
+      if(file.path != ''){
+        List<String> dpath = file.path.split(Platform.pathSeparator);
+        dpath[dpath.length - 1] = 'Pal';
+        dpath.add('Content');
+        Directory.current = dpath.join(Platform.pathSeparator);
+      }
+    }
+    _moved_path_once = true;
+  }
+
   @override
   Widget build(BuildContext context) {
+    _move_path();
+    print(Directory.current);
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
